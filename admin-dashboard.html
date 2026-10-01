@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — Boutique Meninas Lindas</title>
+    <link rel="icon" type="image/png" href="./assets/img/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin-dashboard.css">
+</head>
+
+<body>
+
+    <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <header class="admin-header">
+        <div class="admin-brand">
+            <img src="./assets/img/logo.png" alt="Boutique Meninas Lindas" width="48" height="48">
+            <div>
+                <div class="admin-logo">Boutique Meninas Lindas</div>
+                <div class="admin-subtitle">Painel administrativo</div>
+            </div>
+        </div>
+
+        <button type="button" class="logout-btn" id="logoutBtn">Sair</button>
+    </header>
+
+    <main class="admin-main">
+
+        <h1 class="page-title">Dashboard</h1>
+
+        <p class="page-description">Gerencie as peças e informações da sua boutique.</p>
+
+        <section class="dashboard-grid">
+            <article class="dashboard-card">
+                <div class="dashboard-card-label">Produtos</div>
+                <div class="dashboard-card-value" id="productsCount">0</div>
+            </article>
+
+            <article class="dashboard-card">
+                <div class="dashboard-card-label">Produtos ativos</div>
+                <div class="dashboard-card-value" id="activeProductsCount">0</div>
+            </article>
+
+            <article class="dashboard-card">
+                <div class="dashboard-card-label">Status</div>
+                <div class="dashboard-card-value">Online</div>
+            </article>
+        </section>
+
+        <section class="products-section">
+            <div class="products-header">
+                <h2>Produtos</h2>
+                <button type="button" class="new-product-btn" id="newProductBtn">+ Novo produto</button>
+            </div>
+
+            <div id="productsList"></div>
+        </section>
+
+        <section class="admin-section occasions-section">
+            <div class="section-header">
+                <div>
+                    <h2>Categorias</h2>
+                    <p>Gerencie as categorias e datas especiais disponíveis no catálogo.</p>
+                </div>
+
+                <button type="button" class="btn-primary" id="newOccasionBtn">+ Nova categoria</button>
+            </div>
+
+            <div id="occasionsList" class="occasions-list">
+                <div class="products-loading">Carregando categorias...</div>
+            </div>
+        </section>
+
+    </main>
+
+
+    <!-- =====================================================
+         MODAL NOVO PRODUTO
+    ====================================================== -->
+
+    <div class="modal-overlay" id="productModal" aria-hidden="true">
+        <div class="product-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+
+            <div class="modal-header">
+                <div>
+                    <h2 id="modalTitle">Novo produto</h2>
+                    <p>Cadastre uma nova peça na loja.</p>
+                </div>
+
+                <button type="button" class="modal-close" id="closeProductModal" aria-label="Fechar">×</button>
+            </div>
+
+            <form id="productForm">
+                <div class="form-grid">
+
+                    <div class="form-group form-full">
+                        <label for="productName">Nome do produto</label>
+                        <input type="text" id="productName" placeholder="Ex.: Vestido Midi Floral" maxlength="100" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productOccasion">Categoria</label>
+                        <select id="productOccasion" required>
+                            <option value="">Selecione</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productTag">Tag exibida</label>
+                        <input type="text" id="productTag" placeholder="Ex.: Feminino" maxlength="50" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productPrice">Preço</label>
+                        <input type="number" id="productPrice" placeholder="79.90" min="0" step="0.01" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productOrder">Ordem no catálogo</label>
+                        <input type="number" id="productOrder" value="1" min="0" step="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productIcon">Ícone</label>
+                        <select id="productIcon">
+                            <option value="giftbox">Presente</option>
+                            <option value="flower">Flor</option>
+                            <option value="mug">Caneca</option>
+                            <option value="frame">Porta-retrato</option>
+                            <option value="candle">Vela</option>
+                            <option value="ornament">Enfeite</option>
+                            <option value="bookmark">Marcador</option>
+                            <option value="keychain">Chaveiro</option>
+                            <option value="card">Cartão</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group form-full">
+                        <label for="productDescription">Descrição</label>
+                        <textarea id="productDescription" placeholder="Descreva a peça: tecido, tamanhos, cores..."
+                            maxlength="500" rows="5" required></textarea>
+                        <div class="field-counter" id="descriptionCounter">0 / 500</div>
+                    </div>
+
+                    <div class="form-group form-full">
+                        <label>Imagens do produto <span class="image-counter" id="imageCounter">0 / 4</span></label>
+
+                        <label class="image-upload" for="productImage" id="imageUploadLabel">
+                            <input type="file" id="productImage" accept="image/*" multiple>
+
+                            <div class="image-upload-content" id="imageUploadContent">
+                                <strong>Escolher imagens</strong>
+                                <span>JPG, PNG ou WebP · até 4 fotos</span>
+                            </div>
+                        </label>
+
+                        <div class="image-gallery" id="imageGallery"></div>
+
+                        <small class="field-help">
+                            A primeira imagem é a principal. Use as setas para mudar a ordem. As imagens são
+                            redimensionadas e comprimidas automaticamente antes de salvar.
+                        </small>
+                    </div>
+
+                    <div class="form-group form-full">
+                        <label class="switch-label">
+                            <input type="checkbox" id="productActive" checked>
+                            <span class="switch"></span>
+                            <span>Produto ativo</span>
+                        </label>
+                    </div>
+
+                </div>
+
+                <div class="form-message" id="productFormMessage" aria-live="polite"></div>
+
+                <div class="modal-actions">
+                    <button type="button" class="cancel-btn" id="cancelProductBtn">Cancelar</button>
+                    <button type="submit" class="save-product-btn" id="saveProductBtn">Salvar produto</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+
+    <!-- =====================================================
+         MODAL DE CATEGORIA
+    ======================================================= -->
+
+    <div id="occasionModal" aria-hidden="true">
+        <div class="occasion-modal-content">
+
+            <div class="occasion-modal-header">
+                <h2 id="occasionModalTitle">Nova categoria</h2>
+                <button type="button" class="occasion-close" id="closeOccasionModal" aria-label="Fechar">×</button>
+            </div>
+
+            <form id="occasionForm" class="occasion-form">
+
+                <div class="occasion-form-group">
+                    <label for="occasionLabel">Nome da categoria</label>
+                    <input type="text" id="occasionLabel" placeholder="Ex.: Moda Feminina" maxlength="50" required>
+                </div>
+
+                <div class="occasion-form-group">
+                    <label for="occasionId">Identificador</label>
+                    <input type="text" id="occasionId" placeholder="Ex.: feminina" maxlength="30" required>
+                    <small>Use apenas letras minúsculas, sem espaços ou acentos.</small>
+                </div>
+
+                <div class="occasion-form-group">
+                    <label for="occasionOrder">Ordem</label>
+                    <input type="number" id="occasionOrder" min="1" step="1" value="6" required>
+                </div>
+
+                <label class="occasion-checkbox">
+                    <input type="checkbox" id="occasionActive" checked>
+                    <span>Categoria ativa</span>
+                </label>
+
+                <div id="occasionFormMessage" class="occasion-message"></div>
+
+                <div class="occasion-form-actions">
+                    <button type="button" class="action-btn" id="cancelOccasionBtn">Cancelar</button>
+                    <button type="submit" class="btn-primary" id="saveOccasionBtn">Salvar categoria</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+    <script type="module" src="admin-dashboard.js"></script>
+
+</body>
+
+</html>

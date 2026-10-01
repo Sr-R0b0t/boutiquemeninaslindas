@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Administração — Boutique Meninas Lindas</title>
+
+    <link rel="icon" type="image/png" href="./assets/img/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+
+    <main class="admin-login">
+
+        <div class="admin-brand">
+            <img src="./assets/img/logo.png" alt="Boutique Meninas Lindas" width="96" height="96">
+
+            <h1>Boutique Meninas Lindas</h1>
+
+            <p>Painel administrativo</p>
+        </div>
+
+
+        <form id="loginForm">
+
+            <div class="form-group">
+                <label for="email">E-mail</label>
+
+                <input type="email" id="email" placeholder="Digite seu e-mail" autocomplete="username" required>
+            </div>
+
+
+            <div class="form-group">
+                <label for="password">Senha</label>
+
+                <input type="password" id="password" placeholder="Digite sua senha" autocomplete="current-password"
+                    required>
+            </div>
+
+
+            <button type="submit" class="login-btn" id="loginBtn">Entrar</button>
+
+
+            <div class="login-message" id="loginMessage" aria-live="polite"></div>
+
+        </form>
+
+
+        <a href="index.html" class="back-link">← Voltar para a loja</a>
+
+    </main>
+
+
+    <script type="module" src="admin.js"></script>
+
+</body>
+
+</html>

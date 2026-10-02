@@ -29,7 +29,7 @@ import {
 ========================================================= */
 
 const CONFIG = {
-    whatsappNumber: "5511941527940", // <-- TROCAR pelo número real
+    whatsappNumber: "5511982185418", // <-- TROCAR pelo número real
     storeName: "boutique meninas lindas",
     maxImagesPerProduct: 4
 };

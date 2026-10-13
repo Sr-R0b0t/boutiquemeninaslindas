@@ -35,6 +35,7 @@
                 <li><a href="#ocasioes">Coleção</a></li>
                 <li><a href="#como-funciona">Como comprar</a></li>
                 <li><a href="#sobre">Sobre</a></li>
+                <li><a href="#" id="menuInsta">Instagram</a></li>
                 <li class="nav-links-cta"><a href="#" id="menuWhats" class="btn-primary">Falar no WhatsApp</a></li>
             </ul>
             <a class="nav-cta" id="headerWhats" href="#">
@@ -127,6 +128,9 @@
 
         <div class="tabs" id="tabs"></div>
 
+        <!-- Filtro por nome da peça (preenchido pelo script.js) -->
+        <div class="name-filter" id="nameFilter" hidden></div>
+
         <div class="catalog-carousel-wrap">
 
             <div class="grid" id="productGrid"></div>
@@ -211,6 +215,7 @@
                     <a href="#como-funciona">Como comprar</a>
                     <a href="#sobre">Sobre a boutique</a>
                     <a href="#" id="footWhats">WhatsApp</a>
+                    <a href="#" id="footInsta">Instagram</a>
                 </div>
             </div>
             <div class="foot-bottom">
@@ -219,6 +224,16 @@
             </div>
         </div>
     </footer>
+
+    <!-- Instagram flutuante (fica acima do WhatsApp) -->
+    <a href="#" class="float-insta" id="floatInsta" aria-label="Abrir o Instagram da loja">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="5" />
+            <circle cx="12" cy="12" r="4" />
+            <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+        </svg>
+    </a>
 
     <a href="#" class="float-whats" id="floatWhats" aria-label="Falar no WhatsApp">
         <svg viewBox="0 0 24 24" fill="currentColor">

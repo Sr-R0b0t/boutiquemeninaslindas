@@ -222,6 +222,78 @@ function tamanhoTotalImagens() {
 
 
 /* =========================================================
+   NOMES DE PRODUTO — PADRONIZAÇÃO
+   "Lingerie", "lingerie" e "  LINGERIE " são o mesmo nome.
+   Acentos também são ignorados ("Calça" = "calca").
+========================================================= */
+
+function limparNome(valor) {
+
+    return String(valor ?? "").replace(/\s+/g, " ").trim();
+
+}
+
+function normalizarNome(valor) {
+
+    return limparNome(valor)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+
+}
+
+/*
+   Se já existir outro produto com o mesmo nome (ignorando
+   maiúsculas, minúsculas e acentos), reaproveita a grafia dele.
+*/
+function obterNomeCanonico(nomeDigitado) {
+
+    const chave = normalizarNome(nomeDigitado);
+
+    if (!chave) {
+        return nomeDigitado;
+    }
+
+    const existente = produtosAtuais.find(
+        (item) =>
+            item.id !== produtoEditandoId &&
+            normalizarNome(item.name) === chave
+    );
+
+    return existente ? limparNome(existente.name) : nomeDigitado;
+
+}
+
+/* Sugestões de nomes já cadastrados no campo "Nome do produto" */
+function atualizarSugestoesDeNome() {
+
+    const lista = document.getElementById("productNameList");
+
+    if (!lista) {
+        return;
+    }
+
+    const unicos = new Map();
+
+    produtosAtuais.forEach((item) => {
+
+        const chave = normalizarNome(item.name);
+
+        if (chave && !unicos.has(chave)) {
+            unicos.set(chave, limparNome(item.name));
+        }
+
+    });
+
+    lista.innerHTML = [...unicos.values()]
+        .sort((a, b) => a.localeCompare(b, "pt-BR"))
+        .map((nome) => `<option value="${escaparHTML(nome)}"></option>`)
+        .join("");
+
+}
+
+
+/* =========================================================
    CARREGAR PRODUTOS
 ========================================================= */
 
@@ -255,6 +327,8 @@ async function carregarProdutos() {
         activeProductsCount.textContent = produtosAtivos.length;
 
         renderizarProdutos();
+
+        atualizarSugestoesDeNome();
 
     } catch (erro) {
 
@@ -1288,7 +1362,8 @@ productForm.addEventListener("submit", async (event) => {
 
     event.preventDefault();
 
-    const nome = productName.value.trim();
+    const nomeDigitado = limparNome(productName.value);
+    const nome = obterNomeCanonico(nomeDigitado);
     const ocasiao = productOccasion.value;
     const tag = productTag.value.trim();
     const preco = Number(productPrice.value);
@@ -1355,9 +1430,19 @@ productForm.addEventListener("submit", async (event) => {
             throw new Error("Sua sessão expirou. Faça login novamente.");
         }
 
+        if (nome !== nomeDigitado) {
+            mostrarToast(
+                "Nome padronizado",
+                `Já existe "${nome}", então essa grafia foi mantida.`,
+                "info"
+            );
+        }
+
         const dadosProduto = {
 
             name: nome,
+
+            nameKey: normalizarNome(nome),
 
             occasion: ocasiao,
 

@@ -1,13 +1,41 @@
-//banco de dados
-import { db } from "./firebase-config.js";
+/* =========================================================
+   FIREBASE (import dinâmico)
+   Se o firebase-config.js não existir no servidor ou o Firebase
+   falhar, o site continua funcionando (menu, WhatsApp etc.);
+   só o catálogo fica vazio.
+========================================================= */
 
-import {
-    collection,
-    getDocs
-} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+let db = null;
+let collection = null;
+let getDocs = null;
+
+async function iniciarFirebase() {
+
+    try {
+
+        const config = await import("./firebase-config.js");
+
+        const firestore = await import(
+            "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js"
+        );
+
+        db = config.db;
+        collection = firestore.collection;
+        getDocs = firestore.getDocs;
+
+    } catch (erro) {
+
+        console.error(
+            "Não foi possível carregar o Firebase (confira se o firebase-config.js foi enviado ao servidor):",
+            erro
+        );
+
+    }
+
+}
 
 
-/*. =========================================================
+/* =========================================================
    BOUTIQUE MENINAS LINDAS — SCRIPT.JS
    =========================================================
    Organização:
@@ -16,9 +44,9 @@ import {
    03. Catálogo
    04. WhatsApp
    05. Abas
-   06. Produtos (com galeria de até 4 imagens)
+   06. Produtos (filtro por nome + galeria de até 4 imagens)
    07. Carrossel mobile
-   08. WhatsApp global
+   08. WhatsApp e Instagram
    09. Menu mobile
    10. Inicialização
 ========================================================= */
@@ -30,6 +58,7 @@ import {
 
 const CONFIG = {
     whatsappNumber: "5511982185418", // <-- TROCAR pelo número real
+    instagramUrl: "https://www.instagram.com/SEU_USUARIO/", // <-- TROCAR pelo Instagram da loja
     storeName: "boutique meninas lindas",
     maxImagesPerProduct: 4
 };
@@ -220,6 +249,9 @@ function formatPrice(value) {
 
 let activeOccasion = "todos";
 
+/* chave normalizada do nome escolhido no filtro ("todos" = sem filtro) */
+let activeName = "todos";
+
 
 /* =========================================================
    04. WHATSAPP
@@ -294,7 +326,11 @@ function renderTabs(ocasioes = ocasioesAtuais) {
 
             activeOccasion = button.dataset.id;
 
+            activeName = "todos";
+
             renderTabs(ocasioesAtuais);
+
+            renderNameFilter();
 
             renderProducts();
 
@@ -309,7 +345,32 @@ function renderTabs(ocasioes = ocasioesAtuais) {
    06. PRODUTOS
 ========================================================= */
 
-function getFilteredProducts() {
+/*
+   Normaliza texto para comparação: ignora maiúsculas/minúsculas,
+   acentos e espaços repetidos.
+   "Lingerie", "lingerie" e "  LINGERIE " viram a mesma chave.
+*/
+function normalizarTexto(valor) {
+
+    return String(valor ?? "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .trim();
+
+}
+
+
+function capitalizar(texto) {
+
+    return texto.charAt(0).toUpperCase() + texto.slice(1);
+
+}
+
+
+/* Produtos da categoria (aba) atual, antes do filtro de nome */
+function getProductsDaOcasiao() {
 
     if (activeOccasion === "todos") {
         return PRODUCTS;
@@ -318,6 +379,158 @@ function getFilteredProducts() {
     return PRODUCTS.filter(
         (product) => product.occasion === activeOccasion
     );
+
+}
+
+
+function getFilteredProducts() {
+
+    const base = getProductsDaOcasiao();
+
+    if (activeName === "todos") {
+        return base;
+    }
+
+    return base.filter(
+        (product) => normalizarTexto(product.name) === activeName
+    );
+
+}
+
+
+/*
+   Filtro por nome da peça.
+   Agrupa produtos com o mesmo nome (sem diferenciar maiúsculas,
+   minúsculas ou acentos) e mostra uma lista para escolher.
+   Só aparece se houver 2 ou mais nomes diferentes na categoria.
+*/
+function renderNameFilter() {
+
+    const box = document.getElementById("nameFilter");
+
+    if (!box) {
+        return;
+    }
+
+    const base = getProductsDaOcasiao();
+
+    const grupos = new Map();
+
+    base.forEach((product) => {
+
+        const chave = normalizarTexto(product.name);
+
+        if (!chave) {
+            return;
+        }
+
+        const grupo = grupos.get(chave);
+
+        if (grupo) {
+
+            grupo.count += 1;
+
+        } else {
+
+            grupos.set(chave, {
+                label: String(product.name).replace(/\s+/g, " ").trim(),
+                count: 1
+            });
+
+        }
+
+    });
+
+
+    /* Se o nome escolhido não existe mais nesta categoria, limpa */
+
+    if (activeName !== "todos" && !grupos.has(activeName)) {
+        activeName = "todos";
+    }
+
+
+    if (grupos.size < 2) {
+
+        activeName = "todos";
+
+        box.hidden = true;
+
+        box.innerHTML = "";
+
+        return;
+
+    }
+
+
+    const opcoes = [...grupos.entries()]
+        .sort((a, b) => a[1].label.localeCompare(b[1].label, "pt-BR"))
+        .map(([chave, grupo]) => `
+            <option value="${escaparHTML(chave)}">
+                ${escaparHTML(capitalizar(grupo.label))} (${grupo.count})
+            </option>
+        `)
+        .join("");
+
+
+    box.hidden = false;
+
+    box.innerHTML = `
+
+        <label class="filter-label" for="nameFilterSelect">
+            Filtrar por peça
+        </label>
+
+        <select id="nameFilterSelect" class="filter-select">
+
+            <option value="todos">
+                Todas as peças (${base.length})
+            </option>
+
+            ${opcoes}
+
+        </select>
+
+        <button
+            type="button"
+            class="filter-clear"
+            id="nameFilterClear"
+            ${activeName === "todos" ? "hidden" : ""}
+        >
+            Limpar filtro
+        </button>
+
+    `;
+
+
+    const select = box.querySelector("#nameFilterSelect");
+
+    const clear = box.querySelector("#nameFilterClear");
+
+    select.value = activeName;
+
+
+    select.addEventListener("change", () => {
+
+        activeName = select.value;
+
+        clear.hidden = activeName === "todos";
+
+        renderProducts();
+
+    });
+
+
+    clear.addEventListener("click", () => {
+
+        activeName = "todos";
+
+        select.value = "todos";
+
+        clear.hidden = true;
+
+        renderProducts();
+
+    });
 
 }
 
@@ -474,6 +687,23 @@ function renderProducts() {
 
     const list = getFilteredProducts();
 
+    /* Sem resultados */
+
+    if (!list.length) {
+
+        grid.innerHTML = `
+            <div class="empty-catalog">
+                <strong>Nenhuma peça encontrada.</strong>
+                <span>Tente escolher outra categoria ou outro filtro.</span>
+            </div>
+        `;
+
+        setupProductCarousel();
+
+        return;
+
+    }
+
     grid.innerHTML = list.map((product) => {
 
         const safeName = escaparHTML(product.name);
@@ -542,6 +772,11 @@ function renderProducts() {
     `;
 
     }).join("");
+
+
+    /* Volta o carrossel mobile para o primeiro produto */
+
+    grid.scrollLeft = 0;
 
 
     /* Liga os botões de compra */
@@ -745,6 +980,25 @@ function wireGlobalWhatsapp() {
 }
 
 
+function wireInstagram() {
+
+    ["footInsta", "floatInsta", "menuInsta"].forEach((id) => {
+
+        const element = document.getElementById(id);
+
+        if (!element) {
+            return;
+        }
+
+        element.href = CONFIG.instagramUrl;
+        element.target = "_blank";
+        element.rel = "noopener noreferrer";
+
+    });
+
+}
+
+
 /* =========================================================
    09. MENU MOBILE
 ========================================================= */
@@ -870,17 +1124,27 @@ function wireMobileMenu() {
 
 async function inicializarLoja() {
 
+    /* Primeiro o que não depende do banco de dados */
+
+    wireGlobalWhatsapp();
+
+    wireInstagram();
+
+    wireMobileMenu();
+
+    /* Depois o Firebase e o catálogo */
+
+    await iniciarFirebase();
+
     ocasioesAtuais = await carregarOcasioesDoFirestore();
 
     await carregarProdutos();
 
     renderTabs(ocasioesAtuais);
 
+    renderNameFilter();
+
     renderProducts();
-
-    wireGlobalWhatsapp();
-
-    wireMobileMenu();
 
     setupProductCarousel();
 

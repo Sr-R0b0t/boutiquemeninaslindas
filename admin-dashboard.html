@@ -99,7 +99,13 @@
 
                     <div class="form-group form-full">
                         <label for="productName">Nome do produto</label>
-                        <input type="text" id="productName" placeholder="Ex.: Vestido Midi Floral" maxlength="100" required>
+                        <input type="text" id="productName" placeholder="Ex.: Lingerie" maxlength="100"
+                            list="productNameList" autocomplete="off" required>
+                        <datalist id="productNameList"></datalist>
+                        <small class="field-help">
+                            Letras maiúsculas, minúsculas e acentos não importam: "Lingerie" e "lingerie"
+                            são o mesmo nome. Se já existir, a grafia cadastrada será mantida.
+                        </small>
                     </div>
 
                     <div class="form-group">
@@ -190,7 +196,7 @@
 
     <!-- =====================================================
          MODAL DE CATEGORIA
-    ======================================================= -->
+    ====================================================== -->
 
     <div id="occasionModal" aria-hidden="true">
         <div class="occasion-modal-content">

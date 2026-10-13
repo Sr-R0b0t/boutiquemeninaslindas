@@ -1467,6 +1467,124 @@ button:focus-visible {
   background: #fff;
 }
 
+
+
+
+/* =========================================================
+   FILTRO POR NOME DA PEÇA
+========================================================= */
+
+.name-filter {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: -12px 0 32px;
+}
+
+.name-filter[hidden] { display: none; }
+
+.filter-label {
+  color: var(--ink-soft);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.filter-select {
+  min-width: 240px;
+  max-width: 100%;
+  height: 44px;
+  padding: 0 40px 0 16px;
+  background-color: var(--white);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%23c2185b' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color var(--transition-fast);
+}
+
+.filter-select:hover,
+.filter-select:focus-visible { border-color: var(--lilac); }
+
+.filter-clear {
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  color: var(--lilac-deep);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.filter-clear[hidden] { display: none; }
+.filter-clear:hover { background: var(--bg-panel); border-color: var(--lilac); }
+
+.empty-catalog {
+  grid-column: 1 / -1;
+  width: 100%;
+  padding: 48px 20px;
+  text-align: center;
+  color: var(--ink-faint);
+}
+
+.empty-catalog strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--ink);
+  font-family: "Fraunces", serif;
+  font-size: 1.15rem;
+  font-weight: 500;
+}
+
+/* =========================================================
+   INSTAGRAM FLUTUANTE
+========================================================= */
+
+.float-insta {
+  position: fixed;
+  right: 22px;
+  bottom: calc(22px + 60px + 12px + env(safe-area-inset-bottom, 0px));
+  z-index: 60;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 60px;
+  height: 60px;
+
+  background: var(--white);
+  color: var(--lilac-deep);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  box-shadow: var(--shadow);
+
+  text-decoration: none;
+
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.float-insta:hover {
+  background: var(--lilac-deep);
+  color: var(--on-accent);
+  transform: scale(1.08);
+}
+
+.float-insta svg {
+  width: 27px;
+  height: 27px;
+}
+
+
 /* Desktop: setas só no hover. Celular: só arrastar + bolinhas */
 @media (hover: hover) {
   .gallery-arrow { opacity: 0; }
@@ -1482,6 +1600,17 @@ button:focus-visible {
 ========================================================= */
 
 @media (max-width: 640px) {
+  .name-filter { margin: -8px 0 22px; }
+  .filter-label { width: 100%; }
+  .filter-select { flex: 1; min-width: 0; width: 100%; }
+
+  .float-insta {
+    right: 18px;
+    bottom: calc(18px + 56px + 12px + env(safe-area-inset-bottom, 0px));
+    width: 56px;
+    height: 56px;
+  }
+
   html,
   body { width: 100%; max-width: 100%; overflow-x: clip; }
 

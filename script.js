@@ -58,7 +58,7 @@ async function iniciarFirebase() {
 
 const CONFIG = {
     whatsappNumber: "5511982185418", // <-- TROCAR pelo número real
-    instagramUrl: "https://www.instagram.com/SEU_USUARIO/", // <-- TROCAR pelo Instagram da loja
+    instagramUrl: "https://instagram.com/boutiquemeninaslindas?xtok=ZjMwbDQ2ZGR0YjFo", // <-- TROCAR pelo Instagram da loja
     storeName: "boutique meninas lindas",
     maxImagesPerProduct: 4
 };

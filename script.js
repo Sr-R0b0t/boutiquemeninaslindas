@@ -44,7 +44,7 @@ async function iniciarFirebase() {
    03. Catálogo
    04. WhatsApp
    05. Abas
-   06. Produtos (filtro por nome + galeria de até 4 imagens)
+   06. Produtos (filtro por nome, "Ver mais" e galeria de até 4 imagens)
    07. Carrossel mobile
    08. WhatsApp e Instagram
    09. Menu mobile
@@ -60,7 +60,9 @@ const CONFIG = {
     whatsappNumber: "5511982185418", // <-- TROCAR pelo número real
     instagramUrl: "https://instagram.com/boutiquemeninaslindas?xtok=ZjMwbDQ2ZGR0YjFo", // <-- TROCAR pelo Instagram da loja
     storeName: "boutique meninas lindas",
-    maxImagesPerProduct: 4
+    maxImagesPerProduct: 4,
+    pageSize: 12,   // quantos produtos aparecem por vez ("Ver mais" mostra +12)
+    maxDots: 8      // acima disso o carrossel mobile mostra "3 / 24" em vez de bolinhas
 };
 
 
@@ -251,6 +253,10 @@ let activeOccasion = "todos";
 
 /* chave normalizada do nome escolhido no filtro ("todos" = sem filtro) */
 let activeName = "todos";
+
+/* paginação ("Ver mais") */
+let visibleCount = CONFIG.pageSize;
+let lastViewKey = "";
 
 
 /* =========================================================
@@ -677,7 +683,7 @@ function setupGalleries(root) {
 }
 
 
-function renderProducts() {
+function renderProducts({ resetScroll = true } = {}) {
 
     const grid = document.getElementById("productGrid");
 
@@ -685,7 +691,20 @@ function renderProducts() {
         return;
     }
 
-    const list = getFilteredProducts();
+    const filtrados = getFilteredProducts();
+
+    /* Mudou a categoria ou o filtro: volta para a primeira página */
+
+    const viewKey = `${activeOccasion}|${activeName}`;
+
+    if (viewKey !== lastViewKey) {
+        lastViewKey = viewKey;
+        visibleCount = CONFIG.pageSize;
+    }
+
+    const list = filtrados.slice(0, visibleCount);
+
+    updateLoadMore(filtrados.length, list.length);
 
     /* Sem resultados */
 
@@ -776,7 +795,9 @@ function renderProducts() {
 
     /* Volta o carrossel mobile para o primeiro produto */
 
-    grid.scrollLeft = 0;
+    if (resetScroll) {
+        grid.scrollLeft = 0;
+    }
 
 
     /* Liga os botões de compra */
@@ -801,6 +822,83 @@ function renderProducts() {
     /* Atualiza o carrossel de produtos (mobile) */
 
     setupProductCarousel();
+
+}
+
+
+/* ---------------------------------------------------------
+   "Ver mais"
+--------------------------------------------------------- */
+
+function updateLoadMore(total, shown) {
+
+    const wrap = document.getElementById("loadMoreWrap");
+    const info = document.getElementById("loadMoreInfo");
+    const button = document.getElementById("loadMoreBtn");
+
+    if (!wrap || !info || !button) {
+        return;
+    }
+
+    const restantes = total - shown;
+
+    if (restantes <= 0) {
+
+        wrap.hidden = true;
+
+        return;
+
+    }
+
+    wrap.hidden = false;
+
+    info.textContent = `Mostrando ${shown} de ${total} peças`;
+
+    button.textContent =
+        `Ver mais ${Math.min(CONFIG.pageSize, restantes)} peças`;
+
+}
+
+
+function loadMoreProducts() {
+
+    const anterior = visibleCount;
+
+    visibleCount += CONFIG.pageSize;
+
+    /* não volta o carrossel para o início */
+
+    renderProducts({ resetScroll: false });
+
+    /* no celular, leva direto para a primeira peça nova */
+
+    if (isMobileCarousel()) {
+
+        const grid = document.getElementById("productGrid");
+
+        const primeiraNova = grid?.querySelectorAll(".card")[anterior];
+
+        if (primeiraNova) {
+
+            grid.scrollTo({
+                left: primeiraNova.offsetLeft,
+                behavior: "smooth"
+            });
+
+        }
+
+    }
+
+}
+
+
+function wireLoadMore() {
+
+    const button = document.getElementById("loadMoreBtn");
+
+    if (button) {
+        button.addEventListener("click", loadMoreProducts);
+    }
 
 }
 
@@ -856,9 +954,30 @@ function setupProductCarousel() {
     controls.hidden = false;
 
 
+    /*
+       Com poucos produtos: uma bolinha por produto.
+       Com muitos: um contador compacto ("3 / 24").
+    */
+
+    const useCounter = cards.length > CONFIG.maxDots;
+
+    let counter = null;
+
+    if (useCounter) {
+
+        counter = document.createElement("span");
+
+        counter.className = "carousel-counter";
+
+        counter.setAttribute("aria-live", "polite");
+
+        controls.appendChild(counter);
+
+    }
+
     /* Cria os indicadores */
 
-    const dots = cards.map((card, index) => {
+    const dots = useCounter ? [] : cards.map((card, index) => {
 
         const button = document.createElement("button");
 
@@ -907,6 +1026,10 @@ function setupProductCarousel() {
             }
 
         });
+
+        if (counter) {
+            counter.textContent = `${closestIndex + 1} / ${cards.length}`;
+        }
 
         dots.forEach((dot, index) => {
 
@@ -1129,6 +1252,8 @@ async function inicializarLoja() {
     wireGlobalWhatsapp();
 
     wireInstagram();
+
+    wireLoadMore();
 
     wireMobileMenu();
 
